@@ -1,0 +1,21 @@
+{
+  "name": "drive-cost",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "python3 -m http.server 4179 --directory site --bind 127.0.0.1",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/preview.mjs",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check site/app.js && node --check site/domain.js && node --check site/sw.js && node --check infra/https-redirect.js && node --check scripts/build.mjs && node --check scripts/cloudflare.mjs && node --check scripts/deploy.mjs && node --check scripts/preview.mjs && node --check scripts/verify-hosted.mjs",
+    "e2e": "playwright test",
+    "e2e:production": "E2E_PRODUCTION=1 playwright test",
+    "preflight": "node scripts/cloudflare.mjs",
+    "verify": "node scripts/verify-hosted.mjs",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "devDependencies": { "@playwright/test": "1.64.0", "sst": "4.17.2" }
+}

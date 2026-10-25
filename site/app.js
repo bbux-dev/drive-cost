@@ -22,7 +22,7 @@ const paths = {
 };
 function icon(name) { return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.route}</svg>`; }
 function esc(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
-const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+const money = (value, fractionDigits = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(value);
 const num = (value, maximumFractionDigits = 1) => new Intl.NumberFormat('en-US', { maximumFractionDigits }).format(value);
 const id = () => crypto.randomUUID();
 let state = freshState();
@@ -99,11 +99,15 @@ function renderTrips() {
   const electric = trips.reduce((sum, t) => sum + t.electricCost, 0);
   const gas = trips.reduce((sum, t) => sum + t.gasCost, 0);
   const total = money(electric + gas).slice(1);
-  const miles = trips.reduce((sum, t) => sum + t.electricMiles + t.gasMiles, 0);
+  const electricMiles = trips.reduce((sum, t) => sum + t.electricMiles, 0);
+  const gasMiles = trips.reduce((sum, t) => sum + t.gasMiles, 0);
+  const miles = electricMiles + gasMiles;
   const active = state.activeTrip;
   return `${intro('A LITTLE CLARITY FOR EVERY MILE', 'What did that drive cost?')}
     ${active ? `<div class="active-card"><p class="eyebrow"><i class="dot electric-dot"></i> Trip in progress</p><h2>${esc(active.name || 'Your drive')}</h2><p>Started ${dateText(active.date)} · ${num(active.electric)} electric / ${num(active.gas)} gas mi remaining</p><button class="button" data-action="finish">Finish trip ${icon('arrow')}</button></div>` : ''}
-    <section class="hero" aria-label="Logged trip spending"><div class="hero-top"><span class="eyebrow">YOUR LOGGED DRIVES</span><div class="period-switch" aria-label="Spending period"><button data-action="period" data-period="week" class="${period === 'week' ? 'selected' : ''}" aria-pressed="${period === 'week'}">Week</button><button data-action="period" data-period="month" class="${period === 'month' ? 'selected' : ''}" aria-pressed="${period === 'month'}">Month</button></div></div><div class="hero-value"><span class="currency">$</span>${total}</div><p class="hero-caption">${trips.length} ${trips.length === 1 ? 'trip' : 'trips'} · ${num(miles)} range miles · estimated this ${period}</p><div class="cost-split"><div><i class="dot electric-dot"></i> Electric <strong>${money(electric)}</strong></div><div><i class="dot gas-dot"></i> Gas <strong>${money(gas)}</strong></div></div></section>
+    <section class="hero" aria-label="Logged trip spending"><div class="hero-top"><span class="eyebrow">YOUR LOGGED DRIVES</span><div class="period-switch" aria-label="Spending period"><button data-action="period" data-period="week" class="${period === 'week' ? 'selected' : ''}" aria-pressed="${period === 'week'}">Week</button><button data-action="period" data-period="month" class="${period === 'month' ? 'selected' : ''}" aria-pressed="${period === 'month'}">Month</button></div></div><div class="hero-value"><span class="currency">$</span>${total}</div><p class="hero-caption">${trips.length} ${trips.length === 1 ? 'trip' : 'trips'} · ${num(miles)} range miles · estimated this ${period}</p><div class="cost-split"><div><i class="dot electric-dot"></i> Electric <strong>${money(electric)}</strong></div><div><i class="dot gas-dot"></i> Gas <strong>${money(gas)}</strong></div></div>
+      <div class="cost-per-mile" role="group" aria-label="Average cost per mile"><p class="eyebrow">Average $/mile</p><div class="cost-per-mile-values"><div><span><i class="dot electric-dot"></i> Electric</span><strong>${electricMiles > 0 ? money(electric / electricMiles, 3) : `<span aria-label="No electric miles logged this ${period}">—</span>`}</strong></div><div><span><i class="dot gas-dot"></i> Gas</span><strong>${gasMiles > 0 ? money(gas / gasMiles, 3) : `<span aria-label="No gas miles logged this ${period}">—</span>`}</strong></div></div><p class="hero-caption">Based on logged miles this ${period}</p></div>
+    </section>
     <div class="action-grid"><button class="action-card primary-action" data-action="log">${icon('plus')}<span>Log a trip<small>Already back? Add it.</small></span></button><button class="action-card" data-action="start" ${active ? 'disabled' : ''}>${icon('play')}<span>Start a trip<small>Finish it when you arrive.</small></span></button></div>
     ${config().gasPrice === null ? `<button class="setup-note" data-action="gas-price">${icon('fuel')}<span>One thing to get started<small>Add your last gas price for mixed drives.</small></span>${icon('arrow')}</button>` : ''}
     <div class="section-heading"><h2>Your shortcuts</h2><button class="text-button" data-action="shortcut">${icon('plus')} Add</button></div>

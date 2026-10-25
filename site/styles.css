@@ -5,3 +5,9 @@
 .app-shell{height:min(880px,calc(100dvh - 115px));min-height:0;display:flex;flex-direction:column;overflow:hidden}.app-header{flex-shrink:0}main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#d7ddcd transparent}.field>span svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}.hero-value{overflow-wrap:anywhere}.range-info{min-width:0}.range-info>span{min-width:0}.range-info strong{font-size:12px}.bottom-nav{flex-shrink:0}@media(max-width:599px){.app-shell{height:100dvh;min-height:0}main{min-height:0}.bottom-nav{position:absolute}.desktop-footer{display:none}}
 
 .update-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;background:#e6efda;border-bottom:1px solid #d5e2c4;color:#405a33;padding:10px 24px;font-size:12px}.update-banner[hidden]{display:none}.update-banner button{background:#25473c;border:0;color:white;padding:8px 12px;border-radius:8px;font-size:11px;min-height:34px}
+
+.cost-per-mile{margin-top:17px;padding-top:17px;border-top:1px solid #ffffff20;position:relative;z-index:1}
+.cost-per-mile>.eyebrow{color:#c3d1bd;letter-spacing:1px}
+.cost-per-mile-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:12px 0 9px}
+.cost-per-mile-values>div{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:5px 8px;font-size:12px;color:#e7eee0}
+.cost-per-mile-values strong{font-weight:500;font-variant-numeric:tabular-nums}

@@ -31,7 +31,7 @@ Hosting serves the app; trip data remains in each browser. Localhost and the hos
 - **Fill-ups:** enter odometer, gallons, and total paid. Price per gallon is calculated automatically. Full/nearly full is the default. Date and post-fill gas range are optional details.
 - **Calculator:** enter total distance, including any return, and available electric range. It uses electricity first, then gas. Calculating does not save a trip or change reported range.
 - **Charged:** report a full 25-mile electric range in one tap. Settings can change that value.
-- **History:** week/month totals cover logged trips only. The last-seven-days chart splits gas and electricity. Gas purchases are shown separately from estimated consumption to avoid double counting.
+- **History:** week/month totals cover logged trips only. Average $/mile below the totals divides each fuel's saved trip costs by its logged miles for the selected period, shown to three decimal places; a dash means no miles logged for that fuel. The last-seven-days chart splits gas and electricity. Gas purchases are shown separately from estimated consumption to avoid double counting.
 - **Settings:** edit efficiency, starting gas price, charging time, EV enrollment, or a manual electricity rate. Export all local records as JSON.
 
 ## Calculation assumptions

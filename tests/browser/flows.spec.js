@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { estimate, freshState } from '../../site/domain.js';
 
 test.beforeEach(async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-24T14:00:00-07:00') });
@@ -14,11 +15,49 @@ async function gasPrice(page, value = '4.50') {
 test('starts empty and stays phone-sized on desktop and phone', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'What did that drive cost?' })).toBeVisible();
   await expect(page.locator('.hero-value')).toHaveText('$0.00');
+  await expect(page.getByRole('group', { name: 'Average cost per mile' }).locator('strong')).toHaveText(['—', '—']);
   await expect(page.getByText('Same drive, fewer taps.')).toBeVisible();
   await expect(page.getByText(/Camp/i)).toHaveCount(0);
   expect(await page.locator('.app-shell').evaluate(el => el.getBoundingClientRect().width)).toBeLessThanOrEqual(430);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await expect(page.getByRole('link', { name: 'Calculator' })).toBeVisible();
+});
+
+test('cost per mile weights saved costs by fuel miles and follows the selected period', async ({ page }) => {
+  const saved = freshState();
+  // Current settings differ from the prices saved with these trips.
+  saved.settings = { ...saved.settings, gasPrice: 10, customElectricRate: 1 };
+  saved.trips = [
+    { date: '2026-10-10', electric: 10, gas: 46, gasPrice: 9.2, electricRate: 0.625 },
+    { date: '2026-10-24', electric: 30, gas: 92, gasPrice: 4.6, electricRate: 0.15625 },
+    { date: '2026-09-30', electric: 100, gas: 100, gasPrice: 20, electricRate: 2 },
+    { date: '2026-10-25', electric: 100, gas: 100, gasPrice: 20, electricRate: 2 },
+  ].map((trip, index) => ({
+    ...estimate(trip.electric, trip.gas, { ...saved.settings, gasPrice: trip.gasPrice, customElectricRate: trip.electricRate }, trip.date),
+    id: `average-${index}`, name: `Drive ${index}`, date: trip.date, createdAt: `${trip.date}T12:00:00Z`,
+  }));
+  await page.evaluate(saved => localStorage.setItem('drive-cost-v1', JSON.stringify(saved)), saved);
+  await page.reload();
+  const averages = page.getByRole('group', { name: 'Average cost per mile' });
+  await expect(averages).toContainText('Based on logged miles this month');
+  await expect(averages.locator('strong')).toHaveText(['$0.088', '$0.133']);
+  await page.getByRole('button', { name: 'Week', exact: true }).click();
+  await expect(averages).toContainText('Based on logged miles this week');
+  await expect(averages.locator('strong')).toHaveText(['$0.050', '$0.100']);
+  await page.getByRole('button', { name: 'Month', exact: true }).click();
+  await expect(averages.locator('strong')).toHaveText(['$0.088', '$0.133']);
+  await page.setViewportSize({ width: 320, height: 700 });
+  expect(await averages.evaluate(el => el.scrollWidth <= el.clientWidth)).toBeTruthy();
+});
+
+test('free electric miles show a zero average while unused gas shows a dash', async ({ page }) => {
+  const saved = freshState();
+  saved.trips = [{ ...estimate(5, 0, { ...saved.settings, customElectricRate: 0 }, '2026-10-24'), id: 'free-trip', name: 'Free charge', date: '2026-10-24', createdAt: '2026-10-24T12:00:00Z' }];
+  await page.evaluate(saved => localStorage.setItem('drive-cost-v1', JSON.stringify(saved)), saved);
+  await page.reload();
+  const averages = page.getByRole('group', { name: 'Average cost per mile' });
+  await expect(averages.locator('strong')).toHaveText(['$0.000', '—']);
+  await expect(averages.getByLabel('No gas miles logged this month')).toBeVisible();
 });
 
 test('loads without injected third-party scripts or browser policy errors', async ({ page }) => {
@@ -43,12 +82,14 @@ test('logs electric-only use, persists after reload, and can delete it', async (
   await expect(page.locator('#live-estimate .result-value')).toHaveText('$0.21');
   await page.getByRole('button', { name: 'Save trip', exact: true }).click();
   await expect(page.locator('.hero-value')).toHaveText('$0.21');
+  await expect(page.getByRole('group', { name: 'Average cost per mile' }).locator('strong')).toHaveText(['$0.041', '—']);
   await page.reload();
   await page.getByRole('button', { name: /School pickup/ }).click();
   await expect(page.getByText('Saved with 46 MPG')).toBeVisible();
   await page.getByRole('button', { name: 'Delete trip', exact: true }).click();
   await page.getByRole('button', { name: 'Tap again to delete', exact: true }).click();
   await expect(page.locator('.hero-value')).toHaveText('$0.00');
+  await expect(page.getByRole('group', { name: 'Average cost per mile' }).locator('strong')).toHaveText(['—', '—']);
 });
 
 test('missing-price setup preserves a mixed-trip draft', async ({ page }) => {

@@ -1,5 +1,9 @@
 # Drive cost
 
+I remember my uncle Dale keeping a little notebook in his car. Every time he got gas, he'd write down the mileage, how many gallons he put in, and the price. I'm still not sure what he did with all that information. Maybe he worked out his gas mileage, kept track of what the car was costing him, or just liked having a record. Whatever the reason, that little habit stuck with me.
+
+Drive cost is my version of Uncle Dale's notebook, with electricity added to the math. A plug-in hybrid makes the question a little more interesting: some miles come from the outlet, some from the pump. This app keeps a record and helps answer the question I imagine Dale's notebook could have answered: what did that drive actually cost?
+
 A phone-sized, browser-based PWA for estimating the energy cost of selected drives in a 2020 Kia Niro plug-in hybrid. No accounts, application backend, maps, or vehicle integration. No preloaded trips or shortcuts.
 
 ## Run
